@@ -16,6 +16,7 @@ python ~/unc-racecar/src/charController/oscillator.py
 
 
 **PREREQUISITES:**
+
 Jetson TX2 or Jetson Nano
 Running Linux 16.04 or 18.04
 VESC already configured
