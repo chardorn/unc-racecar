@@ -83,6 +83,14 @@ class DisparityExtenderDriving(object):
         # This field will hold the number of LIDAR samples per degree.
         # Initialized when we first get some LIDAR scan data.
         self.samples_per_degree = 0
+
+        #Distance before cutting into the turn ... should be based on
+        # turning radius of car??
+        self.distance_from_turn = 0.5 # in meters
+
+        #Distance the car should be from the wall
+        self.distance_to_wall = 0.2 # in meters
+
         self.pub_drive_param = rospy.Publisher('drive_parameters',
             drive_param, queue_size=5)
 
@@ -356,22 +364,34 @@ class DisparityExtenderDriving(object):
         self.lidar_distances = distances
         self.samples_per_degree = float(len(distances)) / self.scan_width
         target_distance, target_angle = self.find_new_angle()
-        print("Target Angle: ")
-        print(target_angle)
-        safe_distances = self.masked_disparities
-        forward_distance = safe_distances[len(safe_distances) / 2]
-        #target_angle = self.adjust_angle_to_avoid_uturn(target_angle,
-        #    forward_distance)
-        target_angle = self.adjust_angle_for_car_side(target_angle)
+
+        #if the disparity distance is further than the distance_from_turn, then
+        # instead, hug the opposite wall
+        msg = drive_param()
+
+        #If true, hug the opposite wall
+        if (target_distance > self.distance_from_turn):
+            target_angle = get_angle_to_hug_wall(target_distance, target_angle)
+            print("Target Angle: ")
+            print(target_angle)
+
+        #Else, use disparity extender to navigate turn
+        else:
+            safe_distances = self.masked_disparities
+            target_angle = self.adjust_angle_for_car_side(target_angle)
+            self.update_considered_angle(target_angle)
+            print("Target Angle: ")
+            print(target_angle)
+
         desired_speed = self.duty_cycle_from_distance(forward_distance)
-        self.update_considered_angle(target_angle)
+        forward_distance = safe_distances[len(safe_distances) / 2]
+        msg.velocity = desired_speed * 10 #added for simulator
+
         steering_percentage = self.degrees_to_steering_percentage(target_angle)
         print("Steering Percentage")
         print(steering_percentage)
-        self.get_track_width()
-        msg = drive_param()
         msg.angle = steering_percentage
-        msg.velocity = desired_speed * 10 #added for simulator
+
         self.pub_drive_param.publish(msg)
         duration = time.time() - start_time
         self.lock.release()
@@ -391,6 +411,34 @@ class DisparityExtenderDriving(object):
         right_distance = self.lidar_distances[right_index]
         print("right_distance: " + str(right_distance))
         track_width = left_distance + right_distance
+
+    def get_angle_to_hug_wall(target_distance, target_angle):
+        #If disparity is on left side
+        if(target_angle > 0):
+            print("DISPARITY ON LEFT")
+            left_index = forward_distance_index + int(90 * self.samples_per_degree)
+            print("left_index: " + str(left_index))
+            left_distance = self.lidar_distances[left_index]
+            return get_absolute_value_angle(left_distance)
+
+        #If disparity is on right side
+        #If target andgle < 0
+        else:
+            print("DISPARITY ON RIGHT")
+            right_index = forward_distance_index - int(90 * self.samples_per_degree)
+            print("right_index: " + str(right_index))
+            right_distance = self.lidar_distances[right_index]
+            return 0 - (get_absolute_value_angle(right_distance))
+
+
+    def get_absolute_value_angle(distance):
+        distance_difference = abs(self.distance_to_wall - distance)
+        if(distance_difference >= 2):
+            return max_turn_angle
+        else return ((distance_difference / 2) * max_turn_angle)
+
+
+
 
 
 def lidar_to_degrees(index):
