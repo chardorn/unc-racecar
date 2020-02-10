@@ -368,7 +368,7 @@ class DisparityExtenderDriving(object):
         steering_percentage = self.degrees_to_steering_percentage(target_angle)
         print("Steering Percentage")
         print(steering_percentage)
-        seld.get_track_width()
+        self.get_track_width()
         msg = drive_param()
         msg.angle = steering_percentage
         msg.velocity = desired_speed * 10 #added for simulator
@@ -380,16 +380,15 @@ class DisparityExtenderDriving(object):
 
 
     def get_track_width(self):
-        self.lidar_distances
-        forward_distance_index = int(len(lidar_distances) / 2)
+        forward_distance_index = int(len(self.lidar_distances) / 2)
         print("forward_distance_index: " + str(forward_distance_index))
-        left_index = forward_distance_index + (90 * samples_per_degree)
+        left_index = forward_distance_index + int(90 * self.samples_per_degree)
         print("left_index: " + str(left_index))
-        right_index = forward_distance_index - (90 * samples_per_degree)
+        right_index = forward_distance_index - int(90 * self.samples_per_degree)
         print("right_index: " + str(right_index))
-        left_distance = lidar_distances[left_index]
+        left_distance = self.lidar_distances[left_index]
         print("left_distance: " + str(left_distance))
-        right_distance = lidar_distances[right_index]
+        right_distance = self.lidar_distances[right_index]
         print("right_distance: " + str(right_distance))
         track_width = left_distance + right_distance
 
