@@ -89,7 +89,7 @@ class DisparityExtenderDriving(object):
         self.distance_from_turn = 0.5 # in meters
 
         #Distance the car should be from the wall
-        self.distance_to_wall = 0.2 # in meters
+        self.distance_to_wall = 0.5 # in meters
 
         self.pub_drive_param = rospy.Publisher('drive_parameters',
             drive_param, queue_size=5)
@@ -349,6 +349,7 @@ class DisparityExtenderDriving(object):
             self.max_considered_angle += actual_angle
 
     def lidar_callback(self, lidar_data):
+        "HERE I AM"
         """ This is asynchronously called every time we receive new LIDAR data.
         """
         self.total_packets += 1
@@ -371,20 +372,20 @@ class DisparityExtenderDriving(object):
 
         #If true, hug the opposite wall
         if (target_distance > self.distance_from_turn):
-            target_angle = get_angle_to_hug_wall(target_distance, target_angle)
+            target_angle = self.get_angle_to_hug_wall(target_distance, target_angle)
             print("Target Angle: ")
             print(target_angle)
 
         #Else, use disparity extender to navigate turn
         else:
-            safe_distances = self.masked_disparities
             target_angle = self.adjust_angle_for_car_side(target_angle)
             self.update_considered_angle(target_angle)
             print("Target Angle: ")
             print(target_angle)
 
-        desired_speed = self.duty_cycle_from_distance(forward_distance)
+        safe_distances = self.masked_disparities
         forward_distance = safe_distances[len(safe_distances) / 2]
+        desired_speed = self.duty_cycle_from_distance(forward_distance)
         msg.velocity = desired_speed * 10 #added for simulator
 
         steering_percentage = self.degrees_to_steering_percentage(target_angle)
@@ -398,6 +399,9 @@ class DisparityExtenderDriving(object):
         print "(took %.02f ms): Target point %.02fm at %.02f degrees" % (
             duration * 1000.0, target_distance, target_angle)
 
+    def get_farthest_angle(self):
+        for scans in self.lidar_distances.
+        #find angle of greatest distance
 
     def get_track_width(self):
         forward_distance_index = int(len(self.lidar_distances) / 2)
@@ -412,30 +416,44 @@ class DisparityExtenderDriving(object):
         print("right_distance: " + str(right_distance))
         track_width = left_distance + right_distance
 
-    def get_angle_to_hug_wall(target_distance, target_angle):
-        #If disparity is on left side
-        if(target_angle > 0):
-            print("DISPARITY ON LEFT")
+    def get_angle_to_hug_wall(self, target_distance, target_angle):
+        forward_distance_index = int(len(self.lidar_distances) / 2)
+        #If disparity is on right side
+        if(target_angle < 0):
+            print("DISPARITY ON RIGHT")
             left_index = forward_distance_index + int(90 * self.samples_per_degree)
             print("left_index: " + str(left_index))
             left_distance = self.lidar_distances[left_index]
-            return get_absolute_value_angle(left_distance)
+            print("Left distance: " + str(left_distance))
+            if(left_distance > self.distance_to_wall):
+                return self.get_absolute_value_angle(left_distance)
+            elif(left_distance < self.distance_to_wall):
+                return (left_distance / self.distance_to_wall) * self.max_turn_angle
+            else :
+                return 0
 
-        #If disparity is on right side
-        #If target andgle < 0
+        #If disparity is on left side
+        #If target angle > 0
         else:
-            print("DISPARITY ON RIGHT")
+            print("DISPARITY ON LEFT")
             right_index = forward_distance_index - int(90 * self.samples_per_degree)
             print("right_index: " + str(right_index))
             right_distance = self.lidar_distances[right_index]
-            return 0 - (get_absolute_value_angle(right_distance))
+            print("Right distance: " + str(right_distance))
+            if(right_distance > self.distance_to_wall):
+                return 0 - (self.get_absolute_value_angle(right_distance))
+            elif(right_distance < self.distance_to_wall):
+                return (right_distance / self.distance_to_wall) * self.max_turn_angle
+            else:   
+                return 0
 
-
-    def get_absolute_value_angle(distance):
+    def get_absolute_value_angle(self, distance):
         distance_difference = abs(self.distance_to_wall - distance)
         if(distance_difference >= 2):
-            return max_turn_angle
-        else return ((distance_difference / 2) * max_turn_angle)
+            return self.max_turn_angle
+        else:
+            print((distance_difference)* self.max_turn_angle)
+            return ((distance_difference) * self.max_turn_angle)
 
 
 
