@@ -423,9 +423,10 @@ class DisparityExtenderDriving(object):
             print("DISPARITY ON RIGHT")
             left_index = int(forward_distance_index + 90 * self.samples_per_degree)
             print("left_index: " + str(left_index))
-            left_distance = self.lidar_distances[left_index]
+            #left_distance = self.lidar_distances[left_index]
+            left_distance = self.get_min_index_distance(forward_distance_index, int(len(self.lidar_distances))
             print("Left distance: " + str(left_distance))
-            
+
             if(left_distance > self.distance_to_wall):
                 return self.get_absolute_value_angle(left_distance)
             elif(left_distance < self.distance_to_wall):
@@ -439,7 +440,9 @@ class DisparityExtenderDriving(object):
             print("DISPARITY ON LEFT")
             right_index = int(forward_distance_index - 90 * self.samples_per_degree)
             print("right_index: " + str(right_index))
-            right_distance = self.lidar_distances[right_index]
+            #right_distance = self.lidar_distances[right_index]
+            right_distance = self.get_min_index_distance(0, forward_distance_index))
+
             print("Right distance: " + str(right_distance))
             if(right_distance > self.distance_to_wall):
                 return 0 - (self.get_absolute_value_angle(right_distance))
@@ -456,7 +459,7 @@ class DisparityExtenderDriving(object):
             print((distance_difference)* self.max_turn_angle)
             return ((distance_difference) * self.max_turn_angle)
 
-    def get_min_distance(self, start_index, end_index):
+    def get_min_index_distance(self, start_index, end_index):
         min_distance = 0.0
         min_index = 0
         for i in range(end_index - start_index):
