@@ -388,7 +388,7 @@ class DisparityExtenderDriving(object):
 
         target_distance, target_angle = self.find_new_angle()
 
-        min_index = find_closest_disparity_index()
+        min_index = self.find_closest_disparity_index()
         min_distance = self.lidar_distances[min_index]
         min_angle = angle_from_index(min_index)
         trig_distance = abs(math.cos(math.radians(min_angle)) * min_distance)
