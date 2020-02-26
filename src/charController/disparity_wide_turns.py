@@ -487,12 +487,12 @@ class DisparityExtenderDriving(object):
 
         #if target distance is negative, that means the car is too far right and should turn left
         #if target distance is positive, that means the car is too far left and should turn right
-        if(angle_from_perpendicular > max_turn_angle):
-            angle_from_perpendicular = max_turn_angle
-        if(angle_from_perpendicular < - max_turn_angle):
-            angle_from_perpendicular =  - max_turn_angle
+        if(angle_from_perpendicular > self.max_turn_angle):
+            angle_from_perpendicular = self.max_turn_angle
+        if(angle_from_perpendicular < - self.max_turn_angle):
+            angle_from_perpendicular =  - self.max_turn_angle
 
-        turn_angle = (target_distance * max_turn_angle + angle_from_perpendicular) / 2
+        turn_angle = (target_distance * self.max_turn_angle + angle_from_perpendicular) / 2
         return turn_angle
 
 
