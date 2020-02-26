@@ -457,28 +457,43 @@ class DisparityExtenderDriving(object):
         target_index = int(self.index_from_angle(target_angle))
         if(self.lidar_distances[target_index] > self.lidar_distances[target_index + 10]):
             print("DISPARITY ON RIGHT")
-            left_index, left_distance = self.get_min_index_distance(forward_distance_index, int(len(self.lidar_distances)))
+            wall_index, left_distance = self.get_min_index_distance(target_index, int(len(self.lidar_distances)))
+            wall_angle = angle_from_index(wall_angle)
             print("Left distance: " + str(left_distance))
-            if(left_distance > self.distance_to_wall):
-                return self.get_absolute_value_angle(left_distance)
-            elif(left_distance < self.distance_to_wall):
-                return (left_distance / self.distance_to_wall) * 15
-            else :
-                return 0
+            target_distance = left_distance - (- self.distance_to_wall) #this is negative since we want the wall to be on the left_index
+            if(target_distance < -1.0):
+                target_distance = -1.0
+            angle_from_perpendicular = wall_angle + 90
+            #if angle_from_perpendicular is negative, car needs to turn left
+            #if angle_from_perpendicular is positive, car needs to turn right
+
+
+
 
         #If disparity is on left side
         #If target angle > 0
         else:
             print("DISPARITY ON LEFT")
-            right_index, right_distance = self.get_min_index_distance(0, forward_distance_index)
+            right_index, right_distance = self.get_min_index_distance(0, target_index)
             print("right_index: " + str(right_index))
             print("Right distance: " + str(right_distance))
-            if(right_distance > self.distance_to_wall):
-                return 0 - (self.get_absolute_value_angle(right_distance))
-            elif(right_distance < self.distance_to_wall):
-                return (right_distance / self.distance_to_wall) * self.max_turn_angle
-            else:
-                return 0
+            target_distance = right_distance - ( self.distance_to_wall) #this is negative since we want the wall to be on the left_index
+            if(target_distance > 1.0):
+                target_distance = 1.0
+            angle_from_perpendicular = wall_angle - 90
+            #if angle_from_perpendicular is positive, car needs to turn right
+            #if angle_from_perpendicular is negative, car needs to turn left
+
+    #if target distance is negative, that means the car is too far right and should turn left
+    #if target distance is positive, that means the car is too far left and should turn right
+    if(angle_from_perpendicular > max_turn_angle):
+        angle_from_perpendicular = max_turn_angle
+    if(angle_from_perpendicular < - max_turn_angle):
+        angle_from_perpendicular =  - max_turn_angle
+
+    turn_angle = (target_distance * max_turn_angle + angle_from_perpendicular) / 2
+    return turn_angle
+
 
     def get_absolute_value_angle(self, distance):
         distance_difference = abs(self.distance_to_wall - distance)
