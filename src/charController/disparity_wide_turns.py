@@ -242,7 +242,7 @@ class DisparityExtenderDriving(object):
         masked_disparities = self.masked_disparities
         # Keep this at 0.1 so that we won't identify noise as a disparity
         max_disparity = 0.1
-        max_disparity_index = None
+        closest_disparity_distance = 100
         for d in self.possible_disparity_indices:
             # Ignore disparities that are behind the car.
             angle = self.angle_from_index(d)
