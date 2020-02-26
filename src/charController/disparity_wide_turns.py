@@ -458,7 +458,7 @@ class DisparityExtenderDriving(object):
         if(self.lidar_distances[target_index] > self.lidar_distances[target_index + 10]):
             print("DISPARITY ON RIGHT")
             wall_index, left_distance = self.get_min_index_distance(target_index, int(len(self.lidar_distances)))
-            wall_angle = angle_from_index(wall_angle)
+            wall_angle = angle_from_index(wall_index)
             print("Left distance: " + str(left_distance))
             target_distance = left_distance - (- self.distance_to_wall) #this is negative since we want the wall to be on the left_index
             if(target_distance < -1.0):
@@ -474,8 +474,9 @@ class DisparityExtenderDriving(object):
         #If target angle > 0
         else:
             print("DISPARITY ON LEFT")
-            right_index, right_distance = self.get_min_index_distance(0, target_index)
-            print("right_index: " + str(right_index))
+            wall_index, right_distance = self.get_min_index_distance(0, target_index)
+            wall_angle = angle_from_index(wall_index)
+            print("right_index: " + str(wall_index))
             print("Right distance: " + str(right_distance))
             target_distance = right_distance - ( self.distance_to_wall) #this is negative since we want the wall to be on the left_index
             if(target_distance > 1.0):
