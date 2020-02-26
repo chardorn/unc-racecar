@@ -390,7 +390,7 @@ class DisparityExtenderDriving(object):
 
         min_index = self.find_closest_disparity_index()
         min_distance = self.lidar_distances[min_index]
-        min_angle = angle_from_index(min_index)
+        min_angle = self.angle_from_index(min_index)
         trig_distance = abs(math.cos(math.radians(min_angle)) * min_distance)
 
         #if the disparity distance is further than the distance_from_turn, then
